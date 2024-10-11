@@ -1544,7 +1544,7 @@ void logger_free(Logger *logger) {
 void error_usage() {
     fprintf(stderr, "Usage:   ./train_gpt2fp32cu [options]\n");
     fprintf(stderr, "Options:\n");
-    fprintf(stderr, "  -d <int>    device index default = 0)\n");
+    fprintf(stderr, "  -d <int>    device index (default = 0)\n");
     fprintf(stderr, "  -i <string> train data filename pattern (default = dev/data/tinyshakespeare/tiny_shakespeare_train.bin)\n");
     fprintf(stderr, "  -j <string> val data filename pattern (default = dev/data/tinyshakespeare/tiny_shakespeare_val.bin)\n");
     fprintf(stderr, "  -o <string> output log file (default = NULL)\n");

@@ -1544,6 +1544,7 @@ void logger_free(Logger *logger) {
 void error_usage() {
     fprintf(stderr, "Usage:   ./train_gpt2fp32cu [options]\n");
     fprintf(stderr, "Options:\n");
+    fprintf(stderr, "  -d <int>    device index default = 0)\n");
     fprintf(stderr, "  -i <string> train data filename pattern (default = dev/data/tinyshakespeare/tiny_shakespeare_train.bin)\n");
     fprintf(stderr, "  -j <string> val data filename pattern (default = dev/data/tinyshakespeare/tiny_shakespeare_val.bin)\n");
     fprintf(stderr, "  -o <string> output log file (default = NULL)\n");
@@ -1572,12 +1573,16 @@ int main(int argc, char *argv[]) {
     int val_max_steps = 20; // how many batches max do we eval for validation loss?
     int sample_every = 20; // every how many steps to do inference?
     int genT = 64; // number of steps of inference we will do
+    int deviceIdx = 0; // device index
+    int deviceCnt = 0; // device count
+    cudaError_t err = cudaGetDeviceCount(&deviceCnt);  	
     for (int i = 1; i < argc; i+=2) {
         if (i + 1 >= argc) { error_usage(); } // must have arg after flag
         if (argv[i][0] != '-') { error_usage(); } // must start with dash
         if (strlen(argv[i]) != 2) { error_usage(); } // must be -x (one dash, one letter)
         // read in the args
-        if (argv[i][1] == 'i') { train_data_pattern = argv[i+1]; }
+        if (argv[i][1] == 'd') { deviceIdx = atoi(argv[i+1]); }
+        else if (argv[i][1] == 'i') { train_data_pattern = argv[i+1]; }
         else if (argv[i][1] == 'j') { val_data_pattern = argv[i+1]; }
         else if (argv[i][1] == 'o') { output_log_file = argv[i+1]; }
         else if (argv[i][1] == 'b') { B = atoi(argv[i+1]); }
@@ -1592,6 +1597,8 @@ int main(int argc, char *argv[]) {
     printf("+-----------------------+----------------------------------------------------+\n");
     printf("| Parameter             | Value                                              |\n");
     printf("+-----------------------+----------------------------------------------------+\n");
+    printf("| device count          | %-50d |\n", deviceCnt);
+    printf("| device index          | %-50d |\n", deviceIdx);
     printf("| train data pattern    | %-50s |\n", train_data_pattern);
     printf("| val data pattern      | %-50s |\n", val_data_pattern);
     printf("| output log file       | %-50s |\n", output_log_file == NULL ? "NULL" : output_log_file);
@@ -1605,7 +1612,6 @@ int main(int argc, char *argv[]) {
     printf("+-----------------------+----------------------------------------------------+\n");
 
     // set up the device
-    int deviceIdx = 0;
     cudaCheck(cudaSetDevice(deviceIdx));
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, deviceIdx);
